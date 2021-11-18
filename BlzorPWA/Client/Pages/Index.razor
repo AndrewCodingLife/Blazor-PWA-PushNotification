@@ -1,0 +1,45 @@
+﻿@page "/"
+@inject HttpClient _httpClient
+@inject IJSRuntime _jsRuntime
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+<button @onclick="Subscribe">subscribe</button>
+<button @onclick="SendNotification">send notification message</button>
+
+@code {
+    private async Task Subscribe()
+    {
+        var subscription = await _jsRuntime.InvokeAsync<NotificationSubscription>("blazorPushNotifications.requestSubscription");
+        if (subscription != null)
+        {
+            try
+            {
+                var httpResponseMessage = await _httpClient.PutAsJsonAsync("api/Notification/Subscribe", subscription);
+                httpResponseMessage.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }}
+
+    private async Task SendNotification()
+    {
+        try
+        {
+            var httpResponseMessage = await _httpClient.GetAsync("api/Notification/SendNotification");
+            httpResponseMessage.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+}
+
